@@ -23,92 +23,166 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- 侧边导航 -->
-        <nav class="sidebar">
-            <div class="logo">
-                <span class="logo-icon">🥗</span>
-                <span class="logo-text">家庭食谱</span>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item active" data-page="members">
-                    <span class="nav-icon">👨‍👩‍👧‍👦</span>
-                    <span class="nav-text">家庭成员</span>
-                </li>
-                <li class="nav-item" data-page="weekly">
-                    <span class="nav-icon">📅</span>
-                    <span class="nav-text">一周食谱</span>
-                </li>
-                <li class="nav-item" data-page="recipes">
-                    <span class="nav-icon">🍳</span>
-                    <span class="nav-text">菜谱库</span>
-                </li>
-                <li class="nav-item" data-page="health">
-                    <span class="nav-icon">💚</span>
-                    <span class="nav-text">健康分析</span>
-                </li>
-            </ul>
-        </nav>
-
         <!-- 主内容区 -->
         <main class="main-content">
-            <!-- 家庭成员页面 -->
-            <section id="members-page" class="page active">
-                <header class="page-header">
-                    <h1>家庭成员</h1>
-                    <button class="btn btn-primary" id="add-member-btn">
-                        <span>+</span> 添加成员
-                    </button>
-                </header>
-                <div class="members-grid" id="members-list">
-                    <!-- 成员卡片动态生成 -->
-                </div>
-            </section>
-
-            <!-- 一周食谱页面 -->
-            <section id="weekly-page" class="page">
-                <header class="page-header">
-                    <h1>一周食谱</h1>
-                    <div class="week-selector">
-                        <button class="btn btn-outline" id="prev-week">← 上周</button>
-                        <span class="current-week" id="week-display">本周</span>
-                        <button class="btn btn-outline" id="next-week">下周 →</button>
+            <!-- 首页 -->
+            <section id="home-page" class="page active">
+                <!-- 节气卡片 -->
+                <div class="solar-term-card">
+                    <div class="solar-term-icon">🌸</div>
+                    <div class="solar-term-info">
+                        <div class="solar-term-name" id="current-solar-term">春分</div>
+                        <div class="solar-term-date" id="solar-term-date">3月20日 - 4月4日</div>
+                        <div class="solar-term-tip" id="solar-term-tip">春分时节，阴阳平衡，宜养肝健脾</div>
                     </div>
-                </header>
-                <div class="weekly-menu" id="weekly-menu">
-                    <!-- 一周食谱动态生成 -->
+                </div>
+
+                <!-- 今日食谱 -->
+                <div class="section-header">
+                    <h2>今日食谱</h2>
+                    <span class="date-today" id="today-date">3月18日 周三</span>
+                </div>
+                <div class="today-menu" id="today-menu">
+                    <!-- 今日四餐动态生成 -->
+                </div>
+
+                <!-- 本周概览入口 -->
+                <div class="week-preview-section" id="week-preview">
+                    <div class="section-header">
+                        <h2>本周计划</h2>
+                        <button class="btn-text" data-page="weekly">查看全部 →</button>
+                    </div>
+                    <div class="week-days-scroll" id="week-days-preview">
+                        <!-- 本周日期预览 -->
+                    </div>
+                </div>
+
+                <!-- 家庭成员快捷入口 -->
+                <div class="members-quick-section">
+                    <div class="section-header">
+                        <h2>家庭成员</h2>
+                        <button class="btn-text" data-page="members">管理 →</button>
+                    </div>
+                    <div class="members-scroll" id="home-members-list">
+                        <!-- 成员头像列表 -->
+                    </div>
                 </div>
             </section>
 
             <!-- 菜谱库页面 -->
             <section id="recipes-page" class="page">
-                <header class="page-header">
+                <header class="page-header-simple">
                     <h1>菜谱库</h1>
-                    <div class="search-box">
-                        <input type="text" placeholder="搜索菜谱..." id="recipe-search">
-                    </div>
                 </header>
-                <div class="recipes-filter">
-                    <button class="filter-btn active" data-filter="all">全部</button>
-                    <button class="filter-btn" data-filter="breakfast">早餐</button>
-                    <button class="filter-btn" data-filter="lunch">午餐</button>
-                    <button class="filter-btn" data-filter="dinner">晚餐</button>
-                    <button class="filter-btn" data-filter="snack">下午茶</button>
+                <div class="search-bar">
+                    <input type="text" placeholder="搜索菜谱..." id="recipe-search">
                 </div>
-                <div class="recipes-grid" id="recipes-list">
-                    <!-- 菜谱卡片动态生成 -->
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="breakfast">早餐</button>
+                    <button class="filter-tab" data-filter="lunch">午餐</button>
+                    <button class="filter-tab" data-filter="dinner">晚餐</button>
+                </div>
+                <div class="recipes-list" id="recipes-list">
+                    <!-- 菜谱列表动态生成 -->
                 </div>
             </section>
 
-            <!-- 健康分析页面 -->
-            <section id="health-page" class="page">
-                <header class="page-header">
-                    <h1>健康分析</h1>
+            <!-- 周计划页面 -->
+            <section id="weekly-page" class="page">
+                <header class="page-header-simple">
+                    <h1>一周食谱</h1>
+                    <div class="week-nav">
+                        <button class="week-nav-btn" id="prev-week">‹</button>
+                        <span class="week-current" id="week-display">本周</span>
+                        <button class="week-nav-btn" id="next-week">›</button>
+                    </div>
                 </header>
-                <div class="health-dashboard" id="health-dashboard">
-                    <!-- 健康分析动态生成 -->
+                <div class="week-days-container" id="weekly-menu">
+                    <!-- 一周食谱纵向列表 -->
+                </div>
+            </section>
+
+            <!-- 成员页面 -->
+            <section id="members-page" class="page">
+                <header class="page-header-simple">
+                    <h1>家庭成员</h1>
+                    <button class="btn-icon" id="add-member-btn">+</button>
+                </header>
+                <div class="members-list" id="members-list">
+                    <!-- 成员列表动态生成 -->
+                </div>
+            </section>
+
+            <!-- 我的页面 -->
+            <section id="profile-page" class="page">
+                <header class="page-header-simple">
+                    <h1>我的</h1>
+                </header>
+                <div class="profile-section">
+                    <div class="profile-card">
+                        <div class="profile-avatar">🥗</div>
+                        <div class="profile-name">家庭食谱</div>
+                        <div class="profile-version">v1.0</div>
+                    </div>
+                    
+                    <div class="menu-list">
+                        <div class="menu-item" id="health-analysis-btn">
+                            <span class="menu-icon">💚</span>
+                            <span class="menu-text">健康分析</span>
+                            <span class="menu-arrow">›</span>
+                        </div>
+                        <div class="menu-item" id="data-export-btn">
+                            <span class="menu-icon">📤</span>
+                            <span class="menu-text">导出数据</span>
+                            <span class="menu-arrow">›</span>
+                        </div>
+                        <div class="menu-item" id="data-import-btn">
+                            <span class="menu-icon">📥</span>
+                            <span class="menu-text">导入数据</span>
+                            <span class="menu-arrow">›</span>
+                        </div>
+                        <div class="menu-item" id="clear-data-btn">
+                            <span class="menu-icon">🗑️</span>
+                            <span class="menu-text">清除所有数据</span>
+                            <span class="menu-arrow">›</span>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-list">
+                        <div class="menu-item">
+                            <span class="menu-icon">ℹ️</span>
+                            <span class="menu-text">关于应用</span>
+                            <span class="menu-arrow">›</span>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
+
+        <!-- 底部导航栏 -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-page="home">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">首页</span>
+            </button>
+            <button class="nav-item" data-page="recipes">
+                <span class="nav-icon">🍳</span>
+                <span class="nav-text">菜谱</span>
+            </button>
+            <button class="nav-item" data-page="weekly">
+                <span class="nav-icon">📅</span>
+                <span class="nav-text">周计划</span>
+            </button>
+            <button class="nav-item" data-page="members">
+                <span class="nav-icon">👨‍👩‍👧‍👦</span>
+                <span class="nav-text">成员</span>
+            </button>
+            <button class="nav-item" data-page="profile">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">我的</span>
+            </button>
+        </nav>
     </div>
 
     <!-- 添加成员弹窗 -->
@@ -166,7 +240,7 @@
 
     <!-- 菜谱详情弹窗 -->
     <div class="modal" id="recipe-modal">
-        <div class="modal-content modal-large">
+        <div class="modal-content modal-full">
             <header class="modal-header">
                 <h2 id="recipe-modal-title">菜谱详情</h2>
                 <button class="modal-close" id="close-recipe-modal">&times;</button>
@@ -177,26 +251,39 @@
         </div>
     </div>
 
+    <!-- 健康分析弹窗 -->
+    <div class="modal" id="health-modal">
+        <div class="modal-content modal-full">
+            <header class="modal-header">
+                <h2>健康分析</h2>
+                <button class="modal-close" id="close-health-modal">&times;</button>
+            </header>
+            <div class="health-content" id="health-content">
+                <!-- 健康分析动态生成 -->
+            </div>
+        </div>
+    </div>
+
     <!-- PWA 安装提示 -->
-    <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 16px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 10000; transform: translateY(100%); transition: transform 0.3s ease;">
-        <div style="display: flex; align-items: center; justify-content: space-between; max-width: 600px; margin: 0 auto;">
+    <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 80px; left: 16px; right: 16px; background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 10000;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 32px;">🥗</span>
+                <span style="font-size: 40px;">🥗</span>
                 <div>
-                    <div style="font-weight: 600; color: #1f2937;">安装家庭食谱</div>
-                    <div style="font-size: 13px; color: #6b7280;">添加到主屏幕，离线也能使用</div>
+                    <div style="font-weight: 600; color: #1f2937; font-size: 16px;">安装家庭食谱</div>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">添加到主屏幕，离线也能使用</div>
                 </div>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button id="pwa-dismiss" style="padding: 8px 16px; border: none; background: none; color: #6b7280; font-size: 14px; cursor: pointer;">稍后</button>
-                <button id="pwa-install" style="padding: 8px 20px; border: none; background: #10b981; color: white; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">安装</button>
+                <button id="pwa-dismiss" style="padding: 8px 12px; border: none; background: #f3f4f6; color: #6b7280; border-radius: 8px; font-size: 14px; cursor: pointer;">稍后</button>
+                <button id="pwa-install" style="padding: 8px 16px; border: none; background: #10b981; color: white; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">安装</button>
             </div>
         </div>
     </div>
 
     <!-- PWA 离线提示 -->
     <div id="offline-indicator" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #f59e0b; color: white; text-align: center; padding: 8px; font-size: 13px; z-index: 10001;">
-        当前处于离线模式，部分功能可能受限
+        当前处于离线模式
     </div>
 
     <script>
@@ -210,19 +297,6 @@
                     navigator.serviceWorker.register('/sw.js')
                         .then((registration) => {
                             console.log('[PWA] SW registered:', registration.scope);
-                            
-                            // 检查更新
-                            registration.addEventListener('updatefound', () => {
-                                const newWorker = registration.installing;
-                                newWorker.addEventListener('statechange', () => {
-                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                        // 有新版本可用
-                                        if (confirm('发现新版本，是否刷新更新？')) {
-                                            window.location.reload();
-                                        }
-                                    }
-                                });
-                            });
                         })
                         .catch((error) => {
                             console.log('[PWA] SW registration failed:', error);
@@ -236,76 +310,42 @@
             const installBtn = document.getElementById('pwa-install');
             const dismissBtn = document.getElementById('pwa-dismiss');
             
-            // 检查是否已经安装
             const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
                                window.navigator.standalone === true;
             
             if (!isInstalled) {
                 window.addEventListener('beforeinstallprompt', (e) => {
-                    // 阻止默认提示
                     e.preventDefault();
                     deferredPrompt = e;
                     
-                    // 显示自定义安装提示（延迟3秒，避免打扰）
                     setTimeout(() => {
                         if (!localStorage.getItem('pwa-dismissed')) {
                             installBanner.style.display = 'block';
-                            setTimeout(() => {
-                                installBanner.style.transform = 'translateY(0)';
-                            }, 100);
                         }
                     }, 3000);
                 });
             }
             
-            // 安装按钮
             installBtn.addEventListener('click', async () => {
                 if (!deferredPrompt) return;
-                
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                
                 if (outcome === 'accepted') {
-                    console.log('[PWA] User accepted install');
-                    installBanner.style.transform = 'translateY(100%)';
-                    setTimeout(() => {
-                        installBanner.style.display = 'none';
-                    }, 300);
+                    installBanner.style.display = 'none';
                 }
-                
                 deferredPrompt = null;
             });
             
-            // 关闭按钮
             dismissBtn.addEventListener('click', () => {
                 localStorage.setItem('pwa-dismissed', 'true');
-                installBanner.style.transform = 'translateY(100%)';
-                setTimeout(() => {
-                    installBanner.style.display = 'none';
-                }, 300);
+                installBanner.style.display = 'none';
             });
             
-            // 已安装事件
-            window.addEventListener('appinstalled', () => {
-                console.log('[PWA] App installed');
-                installBanner.style.transform = 'translateY(100%)';
-                setTimeout(() => {
-                    installBanner.style.display = 'none';
-                }, 300);
-                deferredPrompt = null;
-            });
-            
-            // 在线/离线状态检测
+            // 在线/离线状态
             const offlineIndicator = document.getElementById('offline-indicator');
-            
             function updateOnlineStatus() {
-                if (navigator.onLine) {
-                    offlineIndicator.style.display = 'none';
-                } else {
-                    offlineIndicator.style.display = 'block';
-                }
+                offlineIndicator.style.display = navigator.onLine ? 'none' : 'block';
             }
-            
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
             updateOnlineStatus();
