@@ -2,360 +2,303 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#10b981">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="家庭食谱">
-    <meta name="description" content="根据家庭成员生辰八字和体质，智能推荐一周养生食谱">
-    <meta name="format-detection" content="telephone=no">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
-    <link rel="apple-touch-icon" href="icons/icon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="any" href="icons/icon.svg">
-    
-    <title>家庭食谱 - 智能养生膳食</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>家庭记账 - 摆摊收支</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .income-card {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .expense-card {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .profit-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        .nav-item.active {
+            color: #667eea;
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: #667eea;
+            border-radius: 3px;
+        }
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+        .record-item {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .stat-card {
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
 </head>
-<body>
-    <div class="app-container">
-        <!-- 主内容区 -->
-        <main class="main-content">
-            <!-- 首页 -->
-            <section id="home-page" class="page active">
-                <!-- 节气卡片 -->
-                <div class="solar-term-card">
-                    <div class="solar-term-icon">🌸</div>
-                    <div class="solar-term-info">
-                        <div class="solar-term-name" id="current-solar-term">春分</div>
-                        <div class="solar-term-date" id="solar-term-date">3月20日 - 4月4日</div>
-                        <div class="solar-term-tip" id="solar-term-tip">春分时节，阴阳平衡，宜养肝健脾</div>
+<body class="pb-20">
+    <!-- 登录页面 -->
+    <div id="loginPage" class="min-h-screen flex items-center justify-center p-4">
+        <div class="glass-card p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-calculator text-3xl text-white"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">家庭记账</h1>
+                <p class="text-gray-500 mt-2">摆摊收支管理系统</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">选择用户</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="selectUser('husband')" id="btnHusband" class="user-btn p-4 border-2 border-gray-200 rounded-xl text-center transition-all">
+                            <i class="fas fa-user text-2xl mb-2 text-blue-500"></i>
+                            <p class="font-medium">老公</p>
+                        </button>
+                        <button onclick="selectUser('wife')" id="btnWife" class="user-btn p-4 border-2 border-gray-200 rounded-xl text-center transition-all">
+                            <i class="fas fa-user text-2xl mb-2 text-pink-500"></i>
+                            <p class="font-medium">老婆</p>
+                        </button>
                     </div>
                 </div>
-
-                <!-- 今日食谱 -->
-                <div class="section-header">
-                    <h2>今日食谱</h2>
-                    <span class="date-today" id="today-date">3月18日 周三</span>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">家庭密码</label>
+                    <input type="password" id="passwordInput" placeholder="请输入家庭密码" 
+                           class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 text-center text-lg tracking-widest">
                 </div>
-                <div class="today-menu" id="today-menu">
-                    <!-- 今日四餐动态生成 -->
-                </div>
-
-                <!-- 本周概览入口 -->
-                <div class="week-preview-section" id="week-preview">
-                    <div class="section-header">
-                        <h2>本周计划</h2>
-                        <button class="btn-text" data-page="weekly">查看全部 →</button>
-                    </div>
-                    <div class="week-days-scroll" id="week-days-preview">
-                        <!-- 本周日期预览 -->
-                    </div>
-                </div>
-
-                <!-- 家庭成员快捷入口 -->
-                <div class="members-quick-section">
-                    <div class="section-header">
-                        <h2>家庭成员</h2>
-                        <button class="btn-text" data-page="members">管理 →</button>
-                    </div>
-                    <div class="members-scroll" id="home-members-list">
-                        <!-- 成员头像列表 -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- 菜谱库页面 -->
-            <section id="recipes-page" class="page">
-                <header class="page-header-simple">
-                    <h1>菜谱库</h1>
-                </header>
-                <div class="search-bar">
-                    <input type="text" placeholder="搜索菜谱..." id="recipe-search">
-                </div>
-                <div class="filter-tabs">
-                    <button class="filter-tab active" data-filter="all">全部</button>
-                    <button class="filter-tab" data-filter="breakfast">早餐</button>
-                    <button class="filter-tab" data-filter="lunch">午餐</button>
-                    <button class="filter-tab" data-filter="dinner">晚餐</button>
-                </div>
-                <div class="recipes-list" id="recipes-list">
-                    <!-- 菜谱列表动态生成 -->
-                </div>
-            </section>
-
-            <!-- 周计划页面 -->
-            <section id="weekly-page" class="page">
-                <header class="page-header-simple">
-                    <h1>一周食谱</h1>
-                    <div class="week-nav">
-                        <button class="week-nav-btn" id="prev-week">‹</button>
-                        <span class="week-current" id="week-display">本周</span>
-                        <button class="week-nav-btn" id="next-week">›</button>
-                    </div>
-                </header>
-                <div class="week-days-container" id="weekly-menu">
-                    <!-- 一周食谱纵向列表 -->
-                </div>
-            </section>
-
-            <!-- 成员页面 -->
-            <section id="members-page" class="page">
-                <header class="page-header-simple">
-                    <h1>家庭成员</h1>
-                    <button class="btn-icon" id="add-member-btn">+</button>
-                </header>
-                <div class="members-list" id="members-list">
-                    <!-- 成员列表动态生成 -->
-                </div>
-            </section>
-
-            <!-- 我的页面 -->
-            <section id="profile-page" class="page">
-                <header class="page-header-simple">
-                    <h1>我的</h1>
-                </header>
-                <div class="profile-section">
-                    <div class="profile-card">
-                        <div class="profile-avatar">🥗</div>
-                        <div class="profile-name">家庭食谱</div>
-                        <div class="profile-version">v1.0</div>
-                    </div>
-                    
-                    <div class="menu-list">
-                        <div class="menu-item" id="health-analysis-btn">
-                            <span class="menu-icon">💚</span>
-                            <span class="menu-text">健康分析</span>
-                            <span class="menu-arrow">›</span>
-                        </div>
-                        <div class="menu-item" id="data-export-btn">
-                            <span class="menu-icon">📤</span>
-                            <span class="menu-text">导出数据</span>
-                            <span class="menu-arrow">›</span>
-                        </div>
-                        <div class="menu-item" id="data-import-btn">
-                            <span class="menu-icon">📥</span>
-                            <span class="menu-text">导入数据</span>
-                            <span class="menu-arrow">›</span>
-                        </div>
-                        <div class="menu-item" id="clear-data-btn">
-                            <span class="menu-icon">🗑️</span>
-                            <span class="menu-text">清除所有数据</span>
-                            <span class="menu-arrow">›</span>
-                        </div>
-                    </div>
-                    
-                    <div class="menu-list">
-                        <div class="menu-item">
-                            <span class="menu-icon">ℹ️</span>
-                            <span class="menu-text">关于应用</span>
-                            <span class="menu-arrow">›</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- 底部导航栏 -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" data-page="home">
-                <span class="nav-icon">🏠</span>
-                <span class="nav-text">首页</span>
-            </button>
-            <button class="nav-item" data-page="recipes">
-                <span class="nav-icon">🍳</span>
-                <span class="nav-text">菜谱</span>
-            </button>
-            <button class="nav-item" data-page="weekly">
-                <span class="nav-icon">📅</span>
-                <span class="nav-text">周计划</span>
-            </button>
-            <button class="nav-item" data-page="members">
-                <span class="nav-icon">👨‍👩‍👧‍👦</span>
-                <span class="nav-text">成员</span>
-            </button>
-            <button class="nav-item" data-page="profile">
-                <span class="nav-icon">👤</span>
-                <span class="nav-text">我的</span>
-            </button>
-        </nav>
+                
+                <button onclick="login()" class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-lg shadow-lg">
+                    登录
+                </button>
+                
+                <p id="loginError" class="text-red-500 text-center text-sm hidden">密码错误，请重试</p>
+            </div>
+        </div>
     </div>
 
-    <!-- 添加成员弹窗 -->
-    <div class="modal" id="member-modal">
-        <div class="modal-content">
-            <header class="modal-header">
-                <h2>添加家庭成员</h2>
-                <button class="modal-close" id="close-modal">&times;</button>
-            </header>
-            <form class="member-form" id="member-form">
-                <div class="form-group">
-                    <label>姓名</label>
-                    <input type="text" name="name" required placeholder="请输入姓名">
-                </div>
-                <div class="form-group">
-                    <label>性别</label>
-                    <select name="gender" required>
-                        <option value="">请选择</option>
-                        <option value="male">男</option>
-                        <option value="female">女</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>出生日期</label>
-                        <input type="date" name="birthdate" required>
+    <!-- 主应用页面 -->
+    <div id="mainApp" class="hidden">
+        <!-- 顶部用户信息 -->
+        <div class="bg-white/10 backdrop-blur-md text-white p-4">
+            <div class="flex justify-between items-center max-w-lg mx-auto">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i id="userIcon" class="fas fa-user"></i>
                     </div>
-                    <div class="form-group">
-                        <label>出生时间</label>
-                        <input type="time" name="birthtime">
+                    <div>
+                        <p class="text-sm opacity-80">当前用户</p>
+                        <p id="userName" class="font-semibold"></p>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>八字排盘精度</label>
-                    <select name="bazi-precision">
-                        <option value="simple">简化版（推荐）</option>
-                        <option value="precise">精确版（考虑节气/真太阳时）</option>
-                    </select>
+                <button onclick="logout()" class="text-white/80 hover:text-white">
+                    <i class="fas fa-sign-out-alt text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="p-4 max-w-lg mx-auto">
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="stat-card income-card text-white p-4 rounded-2xl">
+                    <p class="text-xs opacity-80 mb-1">今日收入</p>
+                    <p id="todayIncome" class="text-lg font-bold">¥0</p>
                 </div>
-                <div class="form-group">
-                    <label>基础疾病/身体状况</label>
-                    <textarea name="conditions" rows="3" placeholder="如有高血压、糖尿病等请描述"></textarea>
+                <div class="stat-card expense-card text-white p-4 rounded-2xl">
+                    <p class="text-xs opacity-80 mb-1">今日支出</p>
+                    <p id="todayExpense" class="text-lg font-bold">¥0</p>
                 </div>
-                <div class="form-group">
-                    <label>饮食偏好/禁忌</label>
-                    <textarea name="preferences" rows="2" placeholder="如：不吃辣、素食、过敏食材等"></textarea>
+                <div class="stat-card profit-card text-white p-4 rounded-2xl">
+                    <p class="text-xs opacity-80 mb-1">今日盈亏</p>
+                    <p id="todayProfit" class="text-lg font-bold">¥0</p>
                 </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" id="cancel-btn">取消</button>
-                    <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+
+            <!-- 视图切换标签 -->
+            <div class="glass-card p-1 rounded-xl mb-4">
+                <div class="grid grid-cols-3 gap-1">
+                    <button onclick="switchView('daily')" id="tabDaily" class="tab-btn active py-2 px-4 rounded-lg text-sm font-medium transition-all">
+                        每日
+                    </button>
+                    <button onclick="switchView('weekly')" id="tabWeekly" class="tab-btn py-2 px-4 rounded-lg text-sm font-medium transition-all text-gray-600">
+                        每周
+                    </button>
+                    <button onclick="switchView('monthly')" id="tabMonthly" class="tab-btn py-2 px-4 rounded-lg text-sm font-medium transition-all text-gray-600">
+                        每月
+                    </button>
                 </div>
+            </div>
+
+            <!-- 添加按钮 -->
+            <button onclick="showAddModal()" class="btn-primary w-full py-4 rounded-xl text-white font-semibold shadow-lg mb-4 flex items-center justify-center space-x-2">
+                <i class="fas fa-plus"></i>
+                <span>记一笔</span>
+            </button>
+
+            <!-- 每日视图 -->
+            <div id="dailyView" class="view-section">
+                <div class="glass-card p-4 rounded-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-gray-800">收支记录</h3>
+                        <button onclick="exportToExcel()" class="text-purple-600 text-sm font-medium">
+                            <i class="fas fa-download mr-1"></i>导出Excel
+                        </button>
+                    </div>
+                    <div id="recordsList" class="space-y-3">
+                        <!-- 记录列表将在这里渲染 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每周视图 -->
+            <div id="weeklyView" class="view-section hidden">
+                <div class="glass-card p-4 rounded-2xl">
+                    <h3 class="font-bold text-gray-800 mb-4">本周统计</h3>
+                    <div id="weeklyStats" class="space-y-3">
+                        <!-- 周统计数据将在这里渲染 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 每月视图 -->
+            <div id="monthlyView" class="view-section hidden">
+                <div class="glass-card p-4 rounded-2xl">
+                    <h3 class="font-bold text-gray-800 mb-4">本月统计</h3>
+                    <div id="monthlyStats" class="space-y-3">
+                        <!-- 月统计数据将在这里渲染 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 家庭总览 -->
+            <div class="glass-card p-4 rounded-2xl mt-4">
+                <h3 class="font-bold text-gray-800 mb-4">家庭总览</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-green-50 p-3 rounded-xl">
+                        <p class="text-xs text-green-600 mb-1">家庭总收入</p>
+                        <p id="familyIncome" class="text-lg font-bold text-green-700">¥0</p>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded-xl">
+                        <p class="text-xs text-red-600 mb-1">家庭总支出</p>
+                        <p id="familyExpense" class="text-lg font-bold text-red-700">¥0</p>
+                    </div>
+                </div>
+                <div class="bg-blue-50 p-3 rounded-xl mt-3">
+                    <div class="flex justify-between items-center">
+                        <p class="text-xs text-blue-600">家庭总盈亏</p>
+                        <p id="familyProfit" class="text-xl font-bold text-blue-700">¥0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加记录弹窗 -->
+    <div id="addModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-end z-50">
+        <div class="bg-white rounded-t-3xl w-full max-w-lg mx-auto p-6 animate-slide-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">记一笔</h3>
+                <button onclick="hideAddModal()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+            </div>
+            
+            <form id="recordForm" onsubmit="saveRecord(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">日期</label>
+                        <input type="date" id="recordDate" required
+                               class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500">
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">支付宝</label>
+                            <input type="number" id="alipayIncome" placeholder="0" min="0" step="0.01"
+                                   class="input-field w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 text-center">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">微信</label>
+                            <input type="number" id="wechatIncome" placeholder="0" min="0" step="0.01"
+                                   class="input-field w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 text-center">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">现金</label>
+                            <input type="number" id="cashIncome" placeholder="0" min="0" step="0.01"
+                                   class="input-field w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 text-center">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">支出</label>
+                        <input type="number" id="expense" placeholder="0" min="0" step="0.01"
+                               class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">备注</label>
+                        <textarea id="remark" rows="2" placeholder="记录买了什么..."
+                                  class="input-field w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-purple-500 resize-none"></textarea>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary w-full py-4 rounded-xl text-white font-semibold shadow-lg mt-6">
+                    保存记录
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- 菜谱详情弹窗 -->
-    <div class="modal" id="recipe-modal">
-        <div class="modal-content modal-full">
-            <header class="modal-header">
-                <h2 id="recipe-modal-title">菜谱详情</h2>
-                <button class="modal-close" id="close-recipe-modal">&times;</button>
-            </header>
-            <div class="recipe-detail" id="recipe-detail">
-                <!-- 菜谱详情动态生成 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- 健康分析弹窗 -->
-    <div class="modal" id="health-modal">
-        <div class="modal-content modal-full">
-            <header class="modal-header">
-                <h2>健康分析</h2>
-                <button class="modal-close" id="close-health-modal">&times;</button>
-            </header>
-            <div class="health-content" id="health-content">
-                <!-- 健康分析动态生成 -->
-            </div>
-        </div>
-    </div>
-
-    <!-- PWA 安装提示 -->
-    <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 80px; left: 16px; right: 16px; background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 10000;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 40px;">🥗</span>
-                <div>
-                    <div style="font-weight: 600; color: #1f2937; font-size: 16px;">安装家庭食谱</div>
-                    <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">添加到主屏幕，离线也能使用</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <button id="pwa-dismiss" style="padding: 8px 12px; border: none; background: #f3f4f6; color: #6b7280; border-radius: 8px; font-size: 14px; cursor: pointer;">稍后</button>
-                <button id="pwa-install" style="padding: 8px 16px; border: none; background: #10b981; color: white; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;">安装</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PWA 离线提示 -->
-    <div id="offline-indicator" style="display: none; position: fixed; top: 0; left: 0; right: 0; background: #f59e0b; color: white; text-align: center; padding: 8px; font-size: 13px; z-index: 10001;">
-        当前处于离线模式
-    </div>
-
-    <script>
-        // PWA 支持
-        (function() {
-            'use strict';
-            
-            // 注册 Service Worker
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/sw.js')
-                        .then((registration) => {
-                            console.log('[PWA] SW registered:', registration.scope);
-                        })
-                        .catch((error) => {
-                            console.log('[PWA] SW registration failed:', error);
-                        });
-                });
-            }
-            
-            // PWA 安装提示
-            let deferredPrompt;
-            const installBanner = document.getElementById('pwa-install-banner');
-            const installBtn = document.getElementById('pwa-install');
-            const dismissBtn = document.getElementById('pwa-dismiss');
-            
-            const isInstalled = window.matchMedia('(display-mode: standalone)').matches || 
-                               window.navigator.standalone === true;
-            
-            if (!isInstalled) {
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    deferredPrompt = e;
-                    
-                    setTimeout(() => {
-                        if (!localStorage.getItem('pwa-dismissed')) {
-                            installBanner.style.display = 'block';
-                        }
-                    }, 3000);
-                });
-            }
-            
-            installBtn.addEventListener('click', async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    installBanner.style.display = 'none';
-                }
-                deferredPrompt = null;
-            });
-            
-            dismissBtn.addEventListener('click', () => {
-                localStorage.setItem('pwa-dismissed', 'true');
-                installBanner.style.display = 'none';
-            });
-            
-            // 在线/离线状态
-            const offlineIndicator = document.getElementById('offline-indicator');
-            function updateOnlineStatus() {
-                offlineIndicator.style.display = navigator.onLine ? 'none' : 'block';
-            }
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            updateOnlineStatus();
-        })();
-    </script>
-
-    <script src="js/data.js"></script>
-    <script src="js/bazi.js"></script>
-    <script src="js/health.js"></script>
-    <script src="js/recipes.js"></script>
-    <script src="js/app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
