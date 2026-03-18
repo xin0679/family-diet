@@ -1,0 +1,43 @@
+{
+  "name": "家庭食谱 - 智能养生膳食",
+  "short_name": "家庭食谱",
+  "description": "根据家庭成员生辰八字和体质，智能推荐一周养生食谱",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait",
+  "scope": ".",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "health", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "添加成员",
+      "short_name": "添加成员",
+      "description": "快速添加家庭成员",
+      "url": "/?action=add-member",
+      "icons": [{ "src": "icons/icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "查看食谱",
+      "short_name": "食谱",
+      "description": "查看一周食谱推荐",
+      "url": "/?page=weekly",
+      "icons": [{ "src": "icons/icon.svg", "sizes": "96x96" }]
+    }
+  ]
+}
